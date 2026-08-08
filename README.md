@@ -79,7 +79,8 @@ Anthropic Console の **Billing → Usage limits** で月額上限とアラー�
 
 - `permissions:` は必要な分だけ。`contents: write` はあるが、**main への直接 push は GitHub 側のブランチ保護で塞ぐ**のが正解
   - Settings → Branches → main に「Require a pull request before merging」を設定
-- `--allowedTools` で `Bash` を無制限に許可しない。`Bash(npm test)` のように個別に列挙する
+- Claudeの認証付きジョブでは `Bash` を許可しない。PR側で変更できる `npm test` は、Secretsなし・read-only権限の `Test` ワークフローだけで実行する
+- `Bash(git *)` はGit aliasや設定を介して任意コマンドにつながるため許可しない
 - Public リポジトリで外部の人がコメントできる状態なら、`if:` に作者チェックを足す:
   ```yaml
   github.event.comment.author_association == 'OWNER' ||

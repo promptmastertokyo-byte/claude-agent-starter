@@ -40,7 +40,9 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          # 使えるツールを絞る。ここを広げすぎないのが安全運用のコツ
+          additional_permissions: |
+            actions: read
+          # 認証情報を持つジョブでは、PR側で変更できるスクリプトや汎用Gitを実行させない
+          # テストはread-only・Secretsなしのtest.ymlに分離する
           claude_args: |
-            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(npm test),Bash(npm run build),Bash(git *)"
             --max-turns 25
