@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test src/greet.test.js"
+    "test": "node --test"
   }
 }

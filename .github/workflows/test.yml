@@ -2,6 +2,7 @@ name: Test
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 # PR側で変更可能なnpm scriptは、Secretsなし・read-only tokenでのみ実行する
