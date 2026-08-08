@@ -1,7 +1,7 @@
 # claude-agent-starter
 
 GitHub Actions 上で Claude Code を動かす練習用リポジトリ。
-Issue や PR に `@claude` とメンションすると、Claude がコードを読んで修正ブランチと PR を作ります。
+Issue や PR に `@claude` とメンションすると、Claude がコードを読み、修正ブランチへ push してPR作成リンクを提示します。
 
 ---
 
@@ -52,7 +52,7 @@ Anthropic Console の **Billing → Usage limits** で月額上限とアラー�
 デフォルト値を入れて、テストも追加してください。
 ```
 
-数分で Actions が走り、修正ブランチと PR が返ってきます。
+数分で Actions が走り、修正ブランチとPR作成リンクが返ってきます。リンクを確認し、人間がPRを作成します。
 
 ---
 
@@ -60,7 +60,7 @@ Anthropic Console の **Billing → Usage limits** で月額上限とアラー�
 
 | 書き方 | 挙動 |
 |---|---|
-| Issue に `@claude ○○を直して` | 修正ブランチ + PR を作成 |
+| Issue に `@claude ○○を直して` | 修正ブランチへ push + PR作成リンクを提示 |
 | PR コメントに `@claude レビューして` | 差分をレビューしてコメント |
 | PR コメントに `@claude テストが落ちてる。直して` | CI ログを読んで修正を push |
 | コード行コメントに `@claude ここ何してる？` | その箇所を解説 |
@@ -73,7 +73,9 @@ Anthropic Console の **Billing → Usage limits** で月額上限とアラー�
 
 - `if:` 条件で `@claude` を含むときだけ起動 → 無駄な実行をゼロに
 - `timeout-minutes: 20` と `--max-turns 25` で暴走時の上限を固定
+- 同じIssueやPRの新しい実行が始まったら、古い実行を `concurrency` で停止
 - Actions の無料枠は Private リポジトリだと月 2,000 分。Public は無制限
+- Anthropic Consoleで月額上限と使用量アラートを設定し、週1回Usageを確認
 
 **安全性**
 
@@ -81,16 +83,20 @@ Anthropic Console の **Billing → Usage limits** で月額上限とアラー�
   - Settings → Branches → main に「Require a pull request before merging」を設定
 - Claudeの認証付きジョブでは `Bash` を許可しない。PR側で変更できる `npm test` は、Secretsなし・read-only権限の `Test` ワークフローだけで実行する
 - `Bash(git *)` はGit aliasや設定を介して任意コマンドにつながるため許可しない
-- Public リポジトリで外部の人がコメントできる状態なら、`if:` に作者チェックを足す:
-  ```yaml
-  github.event.comment.author_association == 'OWNER' ||
-  github.event.comment.author_association == 'MEMBER'
-  ```
+- Claude Code Actionは既定でwrite権限を持つ利用者だけを許可する。`allowed_non_write_users` や `allowed_bots: '*'` は追加しない
+- Actionsは可変tagではなく、確認済みの完全なcommit SHAへ固定する
 
 **観測**
 
 - 実行ログは Actions タブに全部残る。「何をしようとして失敗したか」はここを見る
 - コストを本格的に見たくなったら Cloudflare AI Gateway を挟む（後からでも可）
+
+**緊急停止**
+
+1. Actionsタブで実行中のClaude workflowをCancelする
+2. リポジトリのActions secretまたは認証設定を無効化する
+3. Claude GitHub Appの対象リポジトリアクセスを外す
+4. Anthropic Consoleで利用状況を確認し、必要ならキーを失効・再発行する
 
 ---
 
